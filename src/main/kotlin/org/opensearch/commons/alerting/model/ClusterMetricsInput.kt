@@ -12,6 +12,7 @@ import org.opensearch.core.xcontent.ToXContent
 import org.opensearch.core.xcontent.XContentBuilder
 import org.opensearch.core.xcontent.XContentParser
 import java.io.IOException
+import java.lang.StringBuilder
 import java.net.URI
 
 val ILLEGAL_PATH_PARAMETER_CHARACTERS = arrayOf(':', '"', '+', '\\', '|', '?', '#', '>', '<', ' ')
@@ -207,11 +208,20 @@ data class ClusterMetricsInput(
      * @return The constructed [URI].
      */
     private fun constructUrlFromInputs(): URI {
+        val fullPath = StringBuilder()
+            .append(path.trim('/'))
+
+        if (pathParams.isNotEmpty())
+            fullPath
+                .append('/')
+                .append(pathParams.trim('/'))
+
         val uriBuilder = URIBuilder()
             .setScheme(SUPPORTED_SCHEME)
             .setHost(SUPPORTED_HOST)
             .setPort(SUPPORTED_PORT)
-            .setPath(path + pathParams)
+            .setPath(fullPath.toString())
+
         return uriBuilder.build()
     }
 
