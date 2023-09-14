@@ -2,6 +2,7 @@ package org.opensearch.commons.alerting.model
 
 import org.apache.commons.validator.routines.UrlValidator
 import org.apache.http.client.utils.URIBuilder
+import org.apache.logging.log4j.LogManager
 import org.opensearch.common.CheckedFunction
 import org.opensearch.common.io.stream.StreamInput
 import org.opensearch.common.io.stream.StreamOutput
@@ -15,6 +16,7 @@ import java.io.IOException
 import java.lang.StringBuilder
 import java.net.URI
 
+private val logger = LogManager.getLogger(ClusterMetricsInput::class.java)
 val ILLEGAL_PATH_PARAMETER_CHARACTERS = arrayOf(':', '"', '+', '\\', '|', '?', '#', '>', '<', ' ')
 
 /**
@@ -23,13 +25,19 @@ val ILLEGAL_PATH_PARAMETER_CHARACTERS = arrayOf(':', '"', '+', '\\', '|', '?', '
 data class ClusterMetricsInput(
     var path: String,
     var pathParams: String = "",
-    var url: String
+    var url: String,
+    var clustersAliases: List<String> = listOf()
 ) : Input {
     val clusterMetricType: ClusterMetricType
     val constructedUri: URI
 
     // Verify parameters are valid during creation
     init {
+        logger.info("hurneyt ClusterMetricsInput::clustersAliases = $clustersAliases")
+
+        // TODO hurneyt
+//        if (clustersAliases.isNullOrEmpty()) clustersAliases = listOf()
+
         require(validateFields()) {
             "The uri.api_type field, uri.path field, or uri.uri field must be defined."
         }
@@ -46,7 +54,12 @@ data class ClusterMetricsInput(
 
         if (url.isNotEmpty() && validateFieldsNotEmpty()) {
             require(constructedUri == constructUrlFromInputs()) {
-                "The provided URL and URI fields form different URLs."
+                "hurneyt The provided URL and URI fields form different URLs." +
+                    "\nurl = $url " +
+                    "\npath = $path " +
+                    "\npathParams = $pathParams " +
+                    "\nconstructedUri = $constructedUri " +
+                    "\nconstructOutput = ${constructUrlFromInputs()}"
             }
         }
 
@@ -75,6 +88,7 @@ data class ClusterMetricsInput(
             .field(PATH_FIELD, path)
             .field(PATH_PARAMS_FIELD, pathParams)
             .field(URL_FIELD, url)
+            .field(CLUSTER_ALIASES_FIELD, clustersAliases)
             .endObject()
             .endObject()
     }
@@ -88,6 +102,7 @@ data class ClusterMetricsInput(
         out.writeString(path)
         out.writeString(pathParams)
         out.writeString(url)
+        out.writeStringArray(clustersAliases.toTypedArray())
     }
 
     companion object {
@@ -100,11 +115,12 @@ data class ClusterMetricsInput(
         const val PATH_PARAMS_FIELD = "path_params"
         const val URL_FIELD = "url"
         const val URI_FIELD = "uri"
+        const val CLUSTER_ALIASES_FIELD = "cluster_aliases"
 
         val XCONTENT_REGISTRY = NamedXContentRegistry.Entry(Input::class.java, ParseField(URI_FIELD), CheckedFunction { parseInner(it) })
 
         /**
-         * This parse function uses [XContentParser] to parse JSON input and store corresponding fields to create a [ClusterMetricsInput] object
+         * This parse function uses [XContentParser] to parse JSON input and store corresponding fields to create a [ClusterMetricsInput] object.
          */
         @JvmStatic
         @Throws(IOException::class)
@@ -112,6 +128,7 @@ data class ClusterMetricsInput(
             var path = ""
             var pathParams = ""
             var url = ""
+            val clustersAliases = mutableListOf<String>()
 
             XContentParserUtils.ensureExpectedToken(XContentParser.Token.START_OBJECT, xcp.currentToken(), xcp)
 
@@ -122,9 +139,20 @@ data class ClusterMetricsInput(
                     PATH_FIELD -> path = xcp.text()
                     PATH_PARAMS_FIELD -> pathParams = xcp.text()
                     URL_FIELD -> url = xcp.text()
+                    CLUSTER_ALIASES_FIELD -> {
+                        XContentParserUtils.ensureExpectedToken(
+                            XContentParser.Token.START_ARRAY,
+                            xcp.currentToken(),
+                            xcp
+                        )
+                        while (xcp.nextToken() != XContentParser.Token.END_ARRAY) {
+                            logger.info("hurneyt ClusterMetricsInput::parseInner xcp.text() = ${xcp.text()}")
+                            clustersAliases.add(xcp.text())
+                        }
+                    }
                 }
             }
-            return ClusterMetricsInput(path, pathParams, url)
+            return ClusterMetricsInput(path, pathParams, url, clustersAliases)
         }
     }
 
@@ -166,7 +194,7 @@ data class ClusterMetricsInput(
             ILLEGAL_PATH_PARAMETER_CHARACTERS.forEach { character ->
                 if (pathParams.contains(character)) {
                     throw IllegalArgumentException(
-                        "The provided path parameters contain invalid characters or spaces. Please omit: " + "${ILLEGAL_PATH_PARAMETER_CHARACTERS.joinToString(" ")}"
+                        "The provided path parameters contain invalid characters or spaces. Please omit: " + ILLEGAL_PATH_PARAMETER_CHARACTERS.joinToString(" ")
                     )
                 }
             }
