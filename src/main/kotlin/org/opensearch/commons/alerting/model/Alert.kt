@@ -43,6 +43,7 @@ data class Alert(
     val aggregationResultBucket: AggregationResultBucket? = null,
     val executionId: String? = null,
     val associatedAlertIds: List<String>,
+    val clusters: List<String>? = null,
 ) : Writeable, ToXContent {
 
     init {
@@ -349,6 +350,7 @@ data class Alert(
         }
         out.writeOptionalString(executionId)
         out.writeStringCollection(associatedAlertIds)
+        if (!clusters.isNullOrEmpty()) out.writeStringArray(clusters.toTypedArray())
     }
 
     companion object {
@@ -379,6 +381,7 @@ data class Alert(
         const val ASSOCIATED_ALERT_IDS_FIELD = "associated_alert_ids"
         const val BUCKET_KEYS = AggregationResultBucket.BUCKET_KEYS
         const val PARENTS_BUCKET_PATH = AggregationResultBucket.PARENTS_BUCKET_PATH
+        const val CLUSTERS_FIELD = "clusters"
         const val NO_ID = ""
         const val NO_VERSION = Versions.NOT_FOUND
 
@@ -409,6 +412,7 @@ data class Alert(
             val actionExecutionResults: MutableList<ActionExecutionResult> = mutableListOf()
             var aggAlertBucket: AggregationResultBucket? = null
             val associatedAlertIds = mutableListOf<String>()
+            val clusters = mutableListOf<String>()
             ensureExpectedToken(XContentParser.Token.START_OBJECT, xcp.currentToken(), xcp)
             while (xcp.nextToken() != XContentParser.Token.END_OBJECT) {
                 val fieldName = xcp.currentName()
@@ -475,6 +479,12 @@ data class Alert(
                             AggregationResultBucket.parse(xcp)
                         }
                     }
+                    CLUSTERS_FIELD -> {
+                        ensureExpectedToken(XContentParser.Token.START_ARRAY, xcp.currentToken(), xcp)
+                        while (xcp.nextToken() != XContentParser.Token.END_ARRAY) {
+                            clusters.add(xcp.text())
+                        }
+                    }
                 }
             }
 
@@ -503,7 +513,8 @@ data class Alert(
                 executionId = executionId,
                 workflowId = workflowId,
                 workflowName = workflowName,
-                associatedAlertIds = associatedAlertIds
+                associatedAlertIds = associatedAlertIds,
+                clusters = if (clusters.size > 0) clusters else null
             )
         }
 
@@ -553,6 +564,9 @@ data class Alert(
             .optionalTimeField(END_TIME_FIELD, endTime)
             .optionalTimeField(ACKNOWLEDGED_TIME_FIELD, acknowledgedTime)
         aggregationResultBucket?.innerXContent(builder)
+
+        if (!clusters.isNullOrEmpty()) builder.field(CLUSTERS_FIELD, clusters)
+
         builder.endObject()
         return builder
     }
@@ -576,7 +590,8 @@ data class Alert(
             BUCKET_KEYS to aggregationResultBucket?.bucketKeys?.joinToString(","),
             PARENTS_BUCKET_PATH to aggregationResultBucket?.parentBucketPath,
             FINDING_IDS to findingIds.joinToString(","),
-            RELATED_DOC_IDS to relatedDocIds.joinToString(",")
+            RELATED_DOC_IDS to relatedDocIds.joinToString(","),
+            CLUSTERS_FIELD to clusters?.joinToString(",")
         )
     }
 }
