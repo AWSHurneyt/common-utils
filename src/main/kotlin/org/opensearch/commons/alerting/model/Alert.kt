@@ -62,6 +62,7 @@ data class Alert(
         chainedAlertTrigger: ChainedAlertTrigger,
         workflow: Workflow,
         associatedAlertIds: List<String>,
+        clusters: List<String>? = null
     ) : this(
         monitorId = NO_ID,
         monitorName = "",
@@ -83,7 +84,8 @@ data class Alert(
         executionId = executionId,
         workflowId = workflow.id,
         workflowName = workflow.name,
-        associatedAlertIds = associatedAlertIds
+        associatedAlertIds = associatedAlertIds,
+        clusters = clusters
     )
 
     constructor(
@@ -98,6 +100,7 @@ data class Alert(
         schemaVersion: Int = NO_SCHEMA_VERSION,
         executionId: String? = null,
         workflowId: String? = null,
+        clusters: List<String>? = null
     ) : this(
         monitorId = monitor.id,
         monitorName = monitor.name,
@@ -119,7 +122,8 @@ data class Alert(
         executionId = executionId,
         workflowId = workflowId ?: "",
         workflowName = "",
-        associatedAlertIds = emptyList()
+        associatedAlertIds = emptyList(),
+        clusters = clusters
     )
 
     constructor(
@@ -135,6 +139,7 @@ data class Alert(
         findingIds: List<String> = emptyList(),
         executionId: String? = null,
         workflowId: String? = null,
+        clusters: List<String>? = null
     ) : this(
         monitorId = monitor.id,
         monitorName = monitor.name,
@@ -156,7 +161,8 @@ data class Alert(
         executionId = executionId,
         workflowId = workflowId ?: "",
         workflowName = "",
-        associatedAlertIds = emptyList()
+        associatedAlertIds = emptyList(),
+        clusters = clusters
     )
 
     constructor(
@@ -173,6 +179,7 @@ data class Alert(
         findingIds: List<String> = emptyList(),
         executionId: String? = null,
         workflowId: String? = null,
+        clusters: List<String>? = null
     ) : this(
         monitorId = monitor.id,
         monitorName = monitor.name,
@@ -194,7 +201,8 @@ data class Alert(
         executionId = executionId,
         workflowId = workflowId ?: "",
         workflowName = "",
-        associatedAlertIds = emptyList()
+        associatedAlertIds = emptyList(),
+        clusters = clusters
     )
 
     constructor(
@@ -212,6 +220,7 @@ data class Alert(
         schemaVersion: Int = NO_SCHEMA_VERSION,
         executionId: String? = null,
         workflowId: String? = null,
+        clusters: List<String>? = null
     ) : this(
         id = id,
         monitorId = monitor.id,
@@ -234,7 +243,8 @@ data class Alert(
         executionId = executionId,
         workflowId = workflowId ?: "",
         workflowName = "",
-        associatedAlertIds = emptyList()
+        associatedAlertIds = emptyList(),
+        clusters = clusters
     )
 
     constructor(
@@ -249,6 +259,7 @@ data class Alert(
         schemaVersion: Int = NO_SCHEMA_VERSION,
         workflowId: String? = null,
         executionId: String?,
+        clusters: List<String>? = null
     ) : this(
         id = id,
         monitorId = monitor.id,
@@ -271,7 +282,8 @@ data class Alert(
         relatedDocIds = listOf(),
         workflowId = workflowId ?: "",
         executionId = executionId,
-        associatedAlertIds = emptyList()
+        associatedAlertIds = emptyList(),
+        clusters = clusters
     )
 
     enum class State {
