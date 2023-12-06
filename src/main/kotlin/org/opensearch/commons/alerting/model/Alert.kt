@@ -578,7 +578,7 @@ data class Alert(
             .optionalTimeField(ACKNOWLEDGED_TIME_FIELD, acknowledgedTime)
         aggregationResultBucket?.innerXContent(builder)
 
-        if (!clusters.isNullOrEmpty()) builder.field(CLUSTERS_FIELD, clusters)
+        if (!clusters.isNullOrEmpty()) builder.field(CLUSTERS_FIELD, clusters.toTypedArray())
 
         builder.endObject()
         return builder
