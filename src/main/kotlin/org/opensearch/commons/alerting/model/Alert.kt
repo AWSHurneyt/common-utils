@@ -312,7 +312,8 @@ data class Alert(
         actionExecutionResults = sin.readList(::ActionExecutionResult),
         aggregationResultBucket = if (sin.readBoolean()) AggregationResultBucket(sin) else null,
         executionId = sin.readOptionalString(),
-        associatedAlertIds = sin.readStringList()
+        associatedAlertIds = sin.readStringList(),
+        clusters = sin.readOptionalStringList()
     )
 
     fun isAcknowledged(): Boolean = (state == State.ACKNOWLEDGED)
