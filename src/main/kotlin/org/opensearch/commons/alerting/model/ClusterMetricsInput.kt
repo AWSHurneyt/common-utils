@@ -33,8 +33,6 @@ data class ClusterMetricsInput(
 
     // Verify parameters are valid during creation
     init {
-        logger.info("hurneyt ClusterMetricsInput::clusters = $clusters")
-
         require(validateFields()) {
             "The uri.api_type field, uri.path field, or uri.uri field must be defined."
         }
@@ -51,12 +49,7 @@ data class ClusterMetricsInput(
 
         if (url.isNotEmpty() && validateFieldsNotEmpty()) {
             require(constructedUri == constructUrlFromInputs()) {
-                "hurneyt The provided URL and URI fields form different URLs." +
-                    "\nurl = $url " +
-                    "\npath = $path " +
-                    "\npathParams = $pathParams " +
-                    "\nconstructedUri = $constructedUri " +
-                    "\nconstructOutput = ${constructUrlFromInputs()}"
+                "The provided URL and URI fields form different URLs."
             }
         }
 
@@ -142,10 +135,7 @@ data class ClusterMetricsInput(
                             xcp.currentToken(),
                             xcp
                         )
-                        while (xcp.nextToken() != XContentParser.Token.END_ARRAY) {
-                            logger.info("hurneyt ClusterMetricsInput::parseInner xcp.text() = ${xcp.text()}")
-                            clusters.add(xcp.text())
-                        }
+                        while (xcp.nextToken() != XContentParser.Token.END_ARRAY) clusters.add(xcp.text())
                     }
                 }
             }

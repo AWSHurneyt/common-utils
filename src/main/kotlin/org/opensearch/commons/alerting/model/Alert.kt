@@ -579,8 +579,6 @@ data class Alert(
         aggregationResultBucket?.innerXContent(builder)
 
         if (!clusters.isNullOrEmpty()) builder.field(CLUSTERS_FIELD, clusters.toTypedArray())
-        // TODO hurneyt: Calling .toTypedArray() is required for a List<String> field to be successfully added to the alert document.
-        //  Add a unit test that confirms each List<String>, and other lists, call .toTypedArray()
 
         builder.endObject()
         return builder
